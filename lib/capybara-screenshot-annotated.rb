@@ -1,32 +1,52 @@
-require 'capybara'
-require 'capybara/dsl'
-require 'capybara-screenshot'
-
+require 'erb'
 
 module Capybara
   module ScreenshotAnnotated
 
-    def create_cursor(input)
-      dir = File.expand_path File.dirname(__FILE__)
-      cursor = File.open("#{dir}/cursor/cursor-#{input}.js")
-      
-      beginning = File.open("#{dir}/cursor/begin.js")
-      ending = File.open("#{dir}/cursor/end.js")
-      output = String.new
-
-      [beginning, cursor, ending].each do |file|
-        file.each_line do |line|
-          output += line
-        end
-      end
-
-      execute_script(output) 
-    end
-    
-    def hover_on_link(text)
+    def hover_on_link_with_text(text)
       find('a', text: text).hover
     end
+
+    def hover_on_element_with_id(id)
+      find("\##{id}").hover
+    end
+
+    def show_cursor(cursor_style = nil)
+      cursor_style = "default" if cursor_style == nil
+      if available_cursor_styles.include? cursor_style
+        preferred_cursor = generate_cursor_script(cursor_style)
+        execute_script(preferred_cursor)
+      else
+        raise "The cursor style \"#{cursor_style}\" is not available."
+      end
+    end
+
+    private
+
+    def available_cursor_styles
+      ["default", "drag", "pointer", "default-inverted", "drag-inverted", "pointer-inverted"]
+    end
+
+    def current_directory
+      File.expand_path File.dirname(__FILE__)
+    end
+
+    def cursor_style_template(cursor_style)
+      File.open("#{current_directory}/cursor/cursor-#{cursor_style}.js.erb", &:read)
+    end
+
+    def generate_cursor_script(cursor_style)
+      template = cursor_style_template(cursor_style)
+      render_cursor_style = ERB.new(template).result(binding)
+      cursor_script = File.open("#{current_directory}/cursor/cursor.js.erb", &:read)
+      ERB.new(cursor_script).result(binding)
+    end
+
   end
 end
+
+require 'capybara'
+require 'capybara/dsl'
+require 'capybara-screenshot'
 
 require 'capybara-screenshot-annotated/capybara-screenshot.rb'
