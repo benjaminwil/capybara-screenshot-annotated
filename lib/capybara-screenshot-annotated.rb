@@ -32,22 +32,22 @@ module Capybara
 
     private
 
+    def javascripts_directory
+      File.join(File.expand_path(File.dirname(__FILE__)), "/javascripts")
+    end
+
     def available_cursor_styles
       ["default", "drag", "pointer", "default-inverted", "drag-inverted", "pointer-inverted"]
     end
 
-    def current_directory
-      File.expand_path File.dirname(__FILE__)
-    end
-
     def cursor_style_template(cursor_style)
-      File.open("#{current_directory}/cursor/cursor-#{cursor_style}.js.erb", &:read)
+      File.open("#{javascripts_directory}/cursor/cursor-#{cursor_style}.js.erb", &:read)
     end
 
     def generate_cursor_script(cursor_style)
       template = cursor_style_template(cursor_style)
       render_cursor_style = ERB.new(template).result(binding)
-      cursor_script = File.open("#{current_directory}/cursor/cursor.js.erb", &:read)
+      cursor_script = File.open("#{javascripts_directory}/cursor/cursor.js.erb", &:read)
       ERB.new(cursor_script).result(binding)
     end
 
