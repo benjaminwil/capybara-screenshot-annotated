@@ -16,9 +16,13 @@ module Capybara
       page.save_screenshot(filename)
     end
 
+    def set_browser_dimensions(width, height)
+      page.driver.browser.manage.window.resize_to(width, height)
+    end
+
     def show_cursor(cursor_style = nil)
       cursor_style = "default" if cursor_style == nil
-      if available_cursor_styles.include? cursor_style
+      if available_cursor_styles.include?(cursor_style)
         preferred_cursor = generate_cursor_script(cursor_style)
         execute_script(preferred_cursor)
       else
