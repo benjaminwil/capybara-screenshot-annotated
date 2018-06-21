@@ -11,6 +11,11 @@ module Capybara
       find("\##{id}").hover
     end
 
+    def save_screenshot_with_filename(filename)
+      filename << '.png' unless filename.downcase.include?('.png')
+      page.save_screenshot(filename)
+    end
+
     def show_cursor(cursor_style = nil)
       cursor_style = "default" if cursor_style == nil
       if available_cursor_styles.include? cursor_style
