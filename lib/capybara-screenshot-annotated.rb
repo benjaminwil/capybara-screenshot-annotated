@@ -1,3 +1,4 @@
+require 'chunky_png'
 require 'erb'
 
 module Capybara
@@ -11,12 +12,17 @@ module Capybara
       find("\##{id}").hover
     end
 
+    def save_screenshot
+      screenshot = page.save_screenshot
+    end
+
     def save_screenshot_with_filename(filename)
       filename << '.png' unless filename.downcase.include?('.png')
       page.save_screenshot(filename)
     end
 
     def set_browser_dimensions(width, height)
+      @screenshot_dimensions = [width, height]
       page.driver.browser.manage.window.resize_to(width, height)
     end
 
@@ -31,6 +37,30 @@ module Capybara
     end
 
     private
+
+    def crop_screenshot(screenshot, x1, y1, x2, y2)
+      canvas = ChunkyPNG::Image.from_file(screenshot)
+      cropped_canvas = canvas.crop(9,9,30,30)
+      # require 'pry'; binding.pry
+      cropped_canvas.save(screenshot)
+    end
+
+    def set_crop_size
+      if @screenshot_dimensions
+        screenshot_width = @screenshot_dimensions[0]
+        screenshot_height = @screenshot_dimensions[1]
+      end
+
+      x_position = @element_location[0]
+      y_position = @element_location[1]
+
+      x_begin = x_position - (full_width / 2)
+      y_begin = y_position - (full_width / 2)
+      full_width = 700
+      full_height = 320
+
+      crop_screenshot(x_begin, y_begin, full_width, full_height)
+    end
 
     def javascripts_directory
       File.join(File.expand_path(File.dirname(__FILE__)), "/javascripts")

@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
   
   s.add_dependency 'capybara'
   s.add_dependency 'capybara-screenshot'
+  s.add_dependency 'chunky_png'
   s.add_dependency 'minitest'
   s.add_dependency 'rspec'
   s.add_dependency 'selenium-webdriver'
