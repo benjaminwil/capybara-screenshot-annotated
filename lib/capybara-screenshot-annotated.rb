@@ -11,9 +11,16 @@ module Capybara
     def hover_on_element_with_id(id)
       find("\##{id}").hover
     end
+    
+    def crop_screenshot_to_size(width, height)
+      x = @element_location.x
+      y = @element_location.y
+      box = box_measurements(x, y, width, height)
+      generate_cropped_screenshot(save_screenshot, box) 
+    end
 
     def save_screenshot
-      screenshot = page.save_screenshot
+      page.save_screenshot
     end
 
     def save_screenshot_with_filename(filename)
@@ -38,28 +45,25 @@ module Capybara
 
     private
 
-    def crop_screenshot(screenshot, x1, y1, x2, y2)
+    def generate_cropped_screenshot(screenshot, box_measurements)
       canvas = ChunkyPNG::Image.from_file(screenshot)
-      cropped_canvas = canvas.crop(9,9,30,30)
-      # require 'pry'; binding.pry
+      cropped_canvas = canvas.crop(
+        box_measurements[:x],
+        box_measurements[:y],
+        box_measurements[:w],
+        box_measurements[:h])
       cropped_canvas.save(screenshot)
     end
 
-    def set_crop_size
-      if @screenshot_dimensions
-        screenshot_width = @screenshot_dimensions[0]
-        screenshot_height = @screenshot_dimensions[1]
-      end
-
-      x_position = @element_location[0]
-      y_position = @element_location[1]
-
-      x_begin = x_position - (full_width / 2)
-      y_begin = y_position - (full_width / 2)
-      full_width = 700
-      full_height = 320
-
-      crop_screenshot(x_begin, y_begin, full_width, full_height)
+    def box_measurements(x_center, y_center, w, h)
+      x1 = x_center - (w / 2) 
+      y1 = y_center - (h / 2)
+        
+      x1 = 0 if x1 < 0
+      y1 = 0 if y1 < 0
+     
+      require 'pry'; binding.pry
+      { x: x1, y: y1, w: w, h: h }
     end
 
     def javascripts_directory
